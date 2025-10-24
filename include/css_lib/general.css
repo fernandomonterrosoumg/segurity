@@ -1,0 +1,43 @@
+.card {
+    margin: 2rem;
+}
+
+.card-header {
+    background: rgb(95,97,255);
+    background: linear-gradient(45deg, rgba(95,97,255,1) 0%, rgba(151,201,205,1) 26%, rgba(139,255,182,1) 42%, rgba(0,255,190,1) 60%, rgba(0,212,255,1) 100%);
+    display    : 0;
+    padding-right: 0;
+}
+
+.title-card {
+    color: white;
+    text-align: right;
+    font-weight: bold;
+    font-size: 48px;
+    text-shadow: 
+        1px 1px 0 rgb(55, 55, 55), /* Sombra hacia abajo a la derecha */
+        -1px 1px 0 rgb(55, 55, 55), /* Sombra hacia abajo a la izquierda */
+        1px -1px 0 rgb(55, 55, 55), /* Sombra hacia arriba a la derecha */
+        -1px -1px 0 rgb(55, 55, 55), /* Sombra hacia arriba a la izquierda */
+        1px 0 0 rgb(55, 55, 55), /* Sombra hacia la derecha */
+        -1px 0 0 rgb(55, 55, 55), /* Sombra hacia la izquierda */
+        0 1px 0 rgb(55, 55, 55), /* Sombra hacia abajo */
+        0 -1px 0 rgb(55, 55, 55); /* Sombra hacia arriba */
+    /*--*/
+}
+
+
+.form-title h2 {
+    font-weight: lighter;
+}
+
+.title-p-1 {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Alinea a la derecha */    
+}
+
+.col-6 {
+    padding-left: 0;
+    padding-right: 0;
+}

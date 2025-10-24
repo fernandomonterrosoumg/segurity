@@ -1,0 +1,11 @@
+.date {
+    color: #F5F5F5; /* El color del texto */
+    text-shadow: 0.7px 0.7px 0 rgb(55, 55, 55), /* Sombra hacia abajo a la derecha */
+                 -0.7px 0.7px 0 rgb(55, 55, 55), /* Sombra hacia abajo a la izquierda */
+                 0.7px -0.7px 0 rgb(55, 55, 55), /* Sombra hacia arriba a la derecha */
+                 -0.7px -0.7px 0 rgb(55, 55, 55), /* Sombra hacia arriba a la izquierda */
+                 0.7px 0 0 rgb(55, 55, 55), /* Sombra hacia la derecha */
+                 -0.7px 0 0 rgb(55, 55, 55), /* Sombra hacia la izquierda */
+                 0 0.7px 0 rgb(55, 55, 55), /* Sombra hacia abajo */
+                 0 -0.7px 0 rgb(55, 55, 55); /* Sombra hacia arriba */
+}

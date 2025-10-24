@@ -1,0 +1,10 @@
+.ajustar-texto {
+    white-space: normal; /* Permitir que el texto haga saltos de línea */
+    word-wrap: break-word; /* Ajustar el texto si es muy largo */
+    overflow-wrap: break-word; /* Para un mejor soporte en navegadores */
+    text-align: left; /* Alinear el texto a la izquierda */
+}
+
+.form-title h2 {
+    font-weight: lighter;
+}

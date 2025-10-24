@@ -1,0 +1,224 @@
+.form-title h2 {
+    font-weight: lighter;
+}
+
+.title-p-1 {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Alinea a la derecha */    
+}
+
+.col-6 {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.genero {
+    border: 0;
+    padding: 0 0;
+}
+
+/*Estilos generales a los botones de genero*/
+.btn-check:checked + .btn img {
+    filter: invert(1);
+}
+
+/*Estilos al boton del hombre*/
+.btn-outline-info:hover {
+    color: white !important;
+}
+
+.btn-check:active + .btn-outline-info, .btn-check:checked + .btn-outline-info, .btn-outline-info.active, .btn-outline-info.dropdown-toggle.show, .btn-outline-info:active {
+    color: white;
+    background-color: #0dcaf0;
+    border-color: #0dcaf0;
+}
+
+.btn-outline-info:hover img {
+    filter: invert(1);
+}
+
+.btn-check:checked + .btn.btn-outline-info img {
+    filter: invert(1);
+}
+
+.generoH {
+    width: 20px;
+    filter: invert(60%) sepia(20%) saturate(3000%) hue-rotate(180deg) brightness(120%);
+    transition: filter 0.2s ease;
+}
+
+/*Estilos al boton de la mujer*/
+.btn-outline-warning:hover {
+    color: white !important;
+}
+
+.btn-check:active + .btn-outline-warning, .btn-check:checked + .btn-outline-warning, .btn-outline-warning.active, .btn-outline-warning.dropdown-toggle.show, .btn-outline-warning:active {
+    color: white;
+    background-color: #ffc107;
+    border-color: #ffc107;
+}
+
+.generoM{
+    width: 20px;
+    filter: invert(70%) sepia(100%) saturate(400%) hue-rotate(-30deg);
+    transition: filter 0.2s ease;
+}
+
+.btn-outline-warning:hover img {
+    filter: invert(1);
+}
+
+.btn-check:checked + .btn.btn-outline-warning img {
+    filter: invert(1);
+}
+
+/******* ANIMACIÓN DE CARGA *******/
+.centrar-sobreponer {
+    position: fixed;
+    top: 11rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+}
+
+.spinner-box {
+    width: 300px;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent;
+}
+
+.leo {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+}
+
+.blue-orbit {
+    width: 165px;
+    height: 165px;
+    border: 3px solid #91daffa5;
+    -webkit-animation: spin3D 3s linear 0.2s infinite;
+}
+
+.green-orbit {
+    width: 120px;
+    height: 120px;
+    border: 3px solid #91ffbfa5;
+    -webkit-animation: spin3D 2s linear 0s infinite;
+}
+
+.red-orbit {
+    width: 90px;
+    height: 90px;
+    border: 3px solid #ffca91a5;
+    -webkit-animation: spin3D 1s linear 0s infinite;
+}
+
+.white-orbit {
+    width: 60px;
+    height: 60px;
+    border: 2px solid #ffc3fc96;
+    -webkit-animation: spin3D 7s linear 0s infinite;
+}
+
+.w1 {
+    transform: rotate3D(1, 1, 1, 90deg);
+}
+
+.w2 {
+    transform: rotate3D(1, 2, 0.5, 90deg);
+}
+
+.w3 {
+    transform: rotate3D(0.5, 1, 2, 90deg);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* KEYFRAMES DE LA ANIMACIÓN DE CARGA */
+
+@keyframes spin {
+    from {
+        transform: rotate(0);
+    }
+
+    to {
+        transform: rotate(359deg);
+    }
+}
+
+@keyframes spin3D {
+    from {
+        transform: rotate3d(0.5, 0.5, 0.5, 360deg);
+    }
+
+    to {
+        transform: rotate3d(0deg);
+    }
+}
+
+@keyframes configure-clockwise {
+    0% {
+        transform: rotate(0);
+    }
+
+    25% {
+        transform: rotate(90deg);
+    }
+
+    50% {
+        transform: rotate(180deg);
+    }
+
+    75% {
+        transform: rotate(270deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes configure-xclockwise {
+    0% {
+        transform: rotate(45deg);
+    }
+
+    25% {
+        transform: rotate(-45deg);
+    }
+
+    50% {
+        transform: rotate(-135deg);
+    }
+
+    75% {
+        transform: rotate(-225deg);
+    }
+
+    100% {
+        transform: rotate(-315deg);
+    }
+}
+
+@keyframes pulse {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0.25;
+        transform: scale(0.75);
+    }
+}
+
+/******* FIN ANIMACIÓN DE CARGA *******/
