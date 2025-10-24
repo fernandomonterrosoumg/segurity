@@ -7,6 +7,9 @@ try {
         if ($v_Func == "getModulos") {
             echo json_encode(getModulos());
         }
+        if ($v_Func == "getTest") {
+            echo json_encode(_connectDB());
+        }
     }
 } catch (Exception $e) {
     http_response_code(500);

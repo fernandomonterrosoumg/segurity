@@ -1,3 +1,4 @@
+
 <?php
 // --- CORS (solo DEV; en PROD fija tu origen exacto) ---
 header("Access-Control-Allow-Origin: *");
@@ -429,3 +430,4 @@ function set_user_session(array $u, string $provider): void
     $_SESSION['usuario_logeado'] = true;
     $_SESSION['auth_provider']   = $provider; // 'local' o 'google'
 }
+

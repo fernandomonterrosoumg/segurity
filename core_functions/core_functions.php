@@ -14,7 +14,24 @@
  * @return resource|false Devuelve el identificador de conexión (`resource`) si la conexión es exitosa, 
  *                         o `false` si ocurre un error en la conexión.
  */
+
+
+
+//include '../../config/config.php';
+require_once __DIR__ . '../../config/config.php';
+
 function _connectDB() {
+    $usuario    = env('DB_USER');
+    $contraseña = env('DB_PASS');
+    $remoto     = env('DB_CONN');
+//return $remoto."sss";
+    $conexion = oci_connect($usuario, $contraseña, $remoto, 'AL32UTF8');
+    if (!$conexion) { $e = oci_error(); trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR); }
+    return $conexion;
+}
+
+
+function _connectDB2() {
     $usuario = "EMR_ACCESSUSER";
     $contraseña = "ACC3SS4S3R";
     // Usa SERVICE_NAME (FREEPDB1), no SID:
@@ -24,6 +41,8 @@ function _connectDB() {
     if (!$conexion) { $e = oci_error(); trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR); }
     return $conexion;
 }
+
+
 
 
 /**
@@ -72,8 +91,8 @@ function _query($strConsulta = "") {
     }
     finally
     {
-        oci_free_statement($consulta);
-        oci_close($conexion);
+        //oci_free_statement($consulta);
+        //oci_close($conexion);
     }
 
     return $arrData;
@@ -128,8 +147,8 @@ function _queryBind($strConsulta, $params)
     }
     finally
     {
-        oci_free_statement($stid);
-        oci_close($conexion);
+        //oci_free_statement($stid);
+        //oci_close($conexion);
     }
 
     return $arrData;
