@@ -24,25 +24,10 @@ function _connectDB() {
     $usuario    = env('DB_USER');
     $contraseña = env('DB_PASS');
     $remoto     = env('DB_CONN');
-//return $remoto."sss";
     $conexion = oci_connect($usuario, $contraseña, $remoto, 'AL32UTF8');
     if (!$conexion) { $e = oci_error(); trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR); }
     return $conexion;
 }
-
-
-function _connectDB2() {
-    $usuario = "EMR_ACCESSUSER";
-    $contraseña = "ACC3SS4S3R";
-    // Usa SERVICE_NAME (FREEPDB1), no SID:
-    $remoto = "localhost:1521/FREEPDB1"; // o "127.0.0.1:1521/FREEPDB1"
-
-    $conexion = oci_connect($usuario, $contraseña, $remoto, 'AL32UTF8');
-    if (!$conexion) { $e = oci_error(); trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR); }
-    return $conexion;
-}
-
-
 
 
 /**

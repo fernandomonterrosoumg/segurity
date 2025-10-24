@@ -1,4 +1,3 @@
-
 <?php
 // --- CORS (solo DEV; en PROD fija tu origen exacto) ---
 header("Access-Control-Allow-Origin: *");
@@ -71,7 +70,7 @@ try {
 
 // ============== HANDLERS ==============
 
-function guardarRegistro()
+function guardarRegistro(): array
 {
     try {
         $payload = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
@@ -81,28 +80,27 @@ function guardarRegistro()
             throw new Exception("Campos obligatorios incompletos.");
         }
 
-        $strExiste = "SELECT 1 FROM EMR.EMR_ACCE_USER WHERE USER_CORREO = :user_correo";
-        $existe = _queryBind($strExiste, [':user_correo' => $data['mail']]);
+        // ¿Existe correo?
+        $strExiste = "SELECT 1 FROM EMR.EMR_ACCE_USER WHERE USER_CORREO = :p_correo";
+        $existe = _queryBind($strExiste, [':p_correo' => $data['mail']]);
         if (!empty($existe)) {
             throw new Exception("Ya existe un usuario con el correo ingresado.");
         }
 
-        $sql =
-        "INSERT INTO EMR.EMR_ACCE_USER
-            (USER_NOMBRE1, USER_NOMBRE2, USER_APELLIDO1, USER_APELLIDO2,
-             USER_CORREO, USER_PASS, ROL_ID, USER_FEC_CREA)
-         VALUES
-            (:user_nombre1, :user_nombre2, :user_apellido1, :user_apellido2,
-             :user_correo, :user_pass, :rol_id, SYSDATE)";
+        $sql = "INSERT INTO EMR.EMR_ACCE_USER
+                (USER_NOMBRE1, USER_NOMBRE2, USER_APELLIDO1, USER_APELLIDO2,
+                 USER_CORREO, USER_PASS, ROL_ID, USER_FEC_CREA)
+                VALUES
+                (:p_n1, :p_n2, :p_a1, :p_a2, :p_correo, :p_pass, :p_rol, SYSDATE)";
 
         $params = [
-            ':user_nombre1'   => $data['nombre1'],
-            ':user_nombre2'   => $data['nombre2'] ?? null,
-            ':user_apellido1' => $data['apellido1'],
-            ':user_apellido2' => $data['apellido2'] ?? null,
-            ':user_correo'    => $data['mail'],
-            ':user_pass'      => password_hash($data['password'], PASSWORD_BCRYPT, ['cost' => 10]),
-            ':rol_id'         => 1,
+            ':p_n1'     => $data['nombre1'],
+            ':p_n2'     => $data['nombre2'] ?? null,
+            ':p_a1'     => $data['apellido1'],
+            ':p_a2'     => $data['apellido2'] ?? null,
+            ':p_correo' => $data['mail'],
+            ':p_pass'   => password_hash((string)$data['password'], PASSWORD_BCRYPT, ['cost' => 10]),
+            ':p_rol'    => 1,
         ];
 
         if (_queryBindCommit($params, $sql)) {
@@ -114,13 +112,13 @@ function guardarRegistro()
     }
 }
 
-function iniciarSesion()
+function iniciarSesion(): array
 {
     try {
         $payload = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
         $data = $payload['dataLogin'] ?? [];
 
-        $mail = trim($data['mail'] ?? '');
+        $mail = trim((string)($data['mail'] ?? ''));
         $pass = (string)($data['password'] ?? '');
 
         if ($mail === '') throw new Exception("Por favor llene el campo de correo electrónico.");
@@ -129,8 +127,8 @@ function iniciarSesion()
         $sql = "SELECT USER_ID, USER_NOMBRE1, USER_NOMBRE2, USER_APELLIDO1, USER_APELLIDO2,
                        USER_CORREO, USER_PASS, ROL_ID
                 FROM EMR.EMR_ACCE_USER
-                WHERE USER_CORREO = :user_correo";
-        $row = _queryBind($sql, [':user_correo' => $mail]);
+                WHERE USER_CORREO = :p_correo";
+        $row = _queryBind($sql, [':p_correo' => $mail]);
 
         if (empty($row)) {
             throw new Exception("El correo ingresado no existe.");
@@ -146,6 +144,10 @@ function iniciarSesion()
         }
 
         set_user_session($u, 'local');
+
+        // Log de login exitoso (dispara trigger si aplica)
+        log_login_success((int)$u['USER_ID'], $u['USER_CORREO'], $_SERVER['REMOTE_ADDR'] ?? null, $_SERVER['HTTP_USER_AGENT'] ?? null);
+
         return ['estado' => true, 'desc' => 'Bienvenido'];
     } catch (Throwable $e) {
         return ['estado' => false, 'desc' => $e->getMessage()];
@@ -155,7 +157,7 @@ function iniciarSesion()
 /**
  * Inicia flujo OAuth con Google (Authorization Code + PKCE)
  */
-function oauth_google_init()
+function oauth_google_init(): void
 {
     $codeVerifier  = base64url(random_bytes(32));
     $codeChallenge = base64url(hash('sha256', $codeVerifier, true));
@@ -178,7 +180,6 @@ function oauth_google_init()
         'code_challenge_method' => 'S256',
     ];
 
-    // Persistir la sesión antes del redirect (evita perder PKCE/state)
     session_write_close();
 
     header('Cache-Control: no-store');
@@ -191,9 +192,8 @@ function oauth_google_init()
  * Callback: intercambia code por tokens, decodifica id_token (JWT) y,
  * si es necesario, consulta /userinfo. Crea usuario (si no existe) y abre sesión.
  */
-function oauth_google_callback()
+function oauth_google_callback(): void
 {
-    // Validaciones iniciales
     if (!isset($_GET['code'], $_GET['state'])) {
         http_response_code(400);
         exit('Faltan parámetros de OAuth');
@@ -209,7 +209,6 @@ function oauth_google_callback()
         exit('PKCE verifier ausente (sesión perdida).');
     }
 
-    // Intercambio de tokens (exponiendo diagnóstico si falla)
     $tokenRes = http_post_form(GOOGLE_TOKEN_EP, [
         'client_id'     => GOOGLE_CLIENT_ID,
         'client_secret' => GOOGLE_CLIENT_SECRET,
@@ -229,8 +228,8 @@ function oauth_google_callback()
     $idToken     = $tokenRes['id_token'];
     $accessToken = $tokenRes['access_token'] ?? null;
 
-    // 1) Extraer datos desde el ID Token (JWT)
-    $ti = decode_jwt_payload($idToken); // DEV: sin verificación de firma
+    // 1) Datos desde el ID Token (JWT)
+    $ti = decode_jwt_payload($idToken); // Nota: en PROD valida firma (JWKS)
     $email         = $ti['email'] ?? null;
     $emailVerified = ($ti['email_verified'] ?? false) ? true : false;
     $name          = $ti['name'] ?? '';
@@ -266,34 +265,33 @@ function oauth_google_callback()
     $sqlSel = "SELECT USER_ID, USER_NOMBRE1, USER_NOMBRE2, USER_APELLIDO1, USER_APELLIDO2,
                       USER_CORREO, USER_PASS, ROL_ID
                FROM EMR.EMR_ACCE_USER
-               WHERE USER_CORREO = :user_correo";
-    $row = _queryBind($sqlSel, [':user_correo' => $email]);
+               WHERE USER_CORREO = :p_correo";
+    $row = _queryBind($sqlSel, [':p_correo' => $email]);
 
     if (empty($row)) {
-        // Derivar nombre y apellido si hace falta
+        // Derivar nombre/apellido si faltan
         if ($givenName === '' || $familyName === '') {
             $parts = preg_split('/\s+/', trim($name));
-            $givenName  = $givenName  ?: ($parts[0] ?? '');
-            $familyName = $familyName ?: ($parts[1] ?? '');
+            $givenName  = $givenName  ?: ($parts[0] ?? 'Google');
+            $familyName = $familyName ?: ($parts[1] ?? 'User');
         }
 
-        // Password aleatoria (no se usará para Google, pero evita nulos)
         $pwdHash = password_hash(random_password(16), PASSWORD_BCRYPT, ['cost' => 10]);
 
-        $sqlIns =
-          "INSERT INTO EMR.EMR_ACCE_USER
-           (USER_NOMBRE1, USER_NOMBRE2, USER_APELLIDO1, USER_APELLIDO2,
-            USER_CORREO, USER_PASS, ROL_ID, USER_FEC_CREA)
-           VALUES
-           (:n1, :n2, :a1, :a2, :correo, :pass, :rol, SYSDATE)";
+        $sqlIns = "INSERT INTO EMR.EMR_ACCE_USER
+                   (USER_NOMBRE1, USER_NOMBRE2, USER_APELLIDO1, USER_APELLIDO2,
+                    USER_CORREO, USER_PASS, ROL_ID, USER_FEC_CREA)
+                   VALUES
+                   (:p_n1, :p_n2, :p_a1, :p_a2, :p_correo, :p_pass, :p_rol, SYSDATE)";
+
         $paramsIns = [
-            ':n1'     => $givenName ?: 'Google',
-            ':n2'     => null,
-            ':a1'     => $familyName ?: 'User',
-            ':a2'     => null,
-            ':correo' => $email,
-            ':pass'   => $pwdHash,
-            ':rol'    => 1,
+            ':p_n1'     => $givenName,
+            ':p_n2'     => null,
+            ':p_a1'     => $familyName,
+            ':p_a2'     => null,
+            ':p_correo' => $email,
+            ':p_pass'   => $pwdHash,
+            ':p_rol'    => 1,
         ];
 
         if (!_queryBindCommit($paramsIns, $sqlIns)) {
@@ -301,8 +299,8 @@ function oauth_google_callback()
             exit('No se pudo crear el usuario');
         }
 
-        // Releer el usuario recién creado
-        $row = _queryBind($sqlSel, [':user_correo' => $email]);
+        // Releer
+        $row = _queryBind($sqlSel, [':p_correo' => $email]);
         if (empty($row)) {
             http_response_code(500);
             exit('Usuario no disponible tras creación');
@@ -317,10 +315,11 @@ function oauth_google_callback()
     }
     set_user_session($u, 'google');
 
-    // Limpieza de artefactos OAuth
+    // Log de login exitoso (dispara trigger si aplica)
+    log_login_success((int)$u['USER_ID'], $u['USER_CORREO'], $_SERVER['REMOTE_ADDR'] ?? null, $_SERVER['HTTP_USER_AGENT'] ?? null);
+
     unset($_SESSION['oauth2_state'], $_SESSION['oauth2_pkce_verifier']);
 
-    // Redirigir a la app
     $dest = $_SESSION['oauth2_redirect'] ?? '/EMRApp';
     header('Location: ' . $dest);
     exit;
@@ -347,13 +346,11 @@ function http_post_form(string $url, array $params): ?array
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    // Enviar client_id/secret también por Basic Auth (aceptado por Google)
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Content-Type: application/x-www-form-urlencoded',
         'Authorization: Basic ' . base64_encode(GOOGLE_CLIENT_ID . ':' . GOOGLE_CLIENT_SECRET),
     ]);
 
-    // Si tu PHP en Windows no tiene CA bundle, configura curl.cainfo en php.ini
     $out    = curl_exec($ch);
     $err    = curl_error($ch);
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -431,3 +428,24 @@ function set_user_session(array $u, string $provider): void
     $_SESSION['auth_provider']   = $provider; // 'local' o 'google'
 }
 
+/**
+ * Inserta un registro de login exitoso. Mantiene tu helper (_queryBindCommit($params, $sql)).
+ */
+function log_login_success(?int $userId, string $email, ?string $ip, ?string $ua): bool
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+
+    $sql = "INSERT INTO EMR.LOGIN_LOG
+            (USER_ID, USER_EMAIL, IP_ADDRESS, USER_AGENT, SESSION_ID)
+            VALUES (:p_uid, :p_email, :p_ip, :p_ua, :p_sid)";
+
+    $params = [
+        ':p_uid'   => $userId,
+        ':p_email' => $email,
+        ':p_ip'    => $ip,
+        ':p_ua'    => $ua,
+        ':p_sid'   => session_id(),
+    ];
+
+    return _queryBindCommit($params, $sql);
+}
