@@ -118,7 +118,7 @@ const app = createApp({
 
       try {
         this.mostrarAnimacion = true;
-        fetch(apiEndpoint + 'getPaciente',requestOptions)
+        http.postJson(apiEndpoint + 'getPaciente',requestOptions)
             .then(response => {         
               return response.json();
             })
@@ -156,7 +156,7 @@ const app = createApp({
         redirect: "follow",
       };
 
-      fetch(apiEndpoint + 'getTipoCita',requestOptions)
+      http.postJson(apiEndpoint + 'getTipoCita',requestOptions)
         .then(response => {
           return response.json();
         })
@@ -215,7 +215,7 @@ const app = createApp({
           redirect: "follow",
         };
 
-        fetch(apiEndpoint + 'guardarCita',requestOptions)
+        http.postJson(apiEndpoint + 'guardarCita',requestOptions)
           .then(response => {         
             return response.json();
           })
@@ -305,7 +305,7 @@ const app = createApp({
         redirect: "follow",
       };
 
-      fetch(apiEndpoint + 'getEstadoCivil',requestOptions)
+      http.postJson(apiEndpoint + 'getEstadoCivil',requestOptions)
         .then(response => {
           return response.json();
         })
@@ -321,7 +321,7 @@ const app = createApp({
         redirect: "follow",
       };
 
-      fetch(apiEndpoint + 'getTipoSangre',requestOptions)
+      http.postJson(apiEndpoint + 'getTipoSangre',requestOptions)
         .then(response => {
           return response.json();
         })
@@ -337,7 +337,7 @@ const app = createApp({
         redirect: "follow",
       };
 
-      fetch(apiEndpoint + 'getNacionalidad',requestOptions)
+      http.postJson(apiEndpoint + 'getNacionalidad',requestOptions)
         .then(response => {
           return response.json();
         })

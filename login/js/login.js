@@ -79,7 +79,7 @@ const app = createApp({
           redirect: "follow",
         };
 
-        fetch(apiEndpoint + "guardarRegistro", requestOptions)
+        http.postJson(apiEndpoint + "guardarRegistro", requestOptions)
           .then((response) => {
             return response.json();
           })
@@ -112,7 +112,7 @@ const app = createApp({
         redirect: "follow",
       };
 
-      fetch(apiEndpoint + "iniciarSesion", requestOptions)
+      http.postJson(apiEndpoint + "iniciarSesion", requestOptions)
         .then((response) => {
           return response.json();
         })
